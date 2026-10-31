@@ -1,4 +1,4 @@
-import {config} from './config.js';
+import {config} from './config.js?v=appcheck-20261031';
 export let session=null;
 let sdk,db,auth;
 const key='honal_v2_demo';
