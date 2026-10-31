@@ -12,6 +12,14 @@ function local(){
   value.defaultManualsReady=true;
   persist(value);
  }
+ if(!value.presetManualsReady){
+  value.manuals ||= [];
+  for(const [i,m] of defaultManuals.entries()){
+   if(!value.manuals.some(x=>x.title===m.title))value.manuals.push({...m,id:'preset-'+i,version:1,isTemplate:true,createdAt:Date.now(),updatedAt:Date.now()});
+  }
+  value.presetManualsReady=true;
+  persist(value);
+ }
  return value;
 }
 function persist(d){localStorage.setItem(key,JSON.stringify(d));}
