@@ -3,7 +3,17 @@ export let session=null;
 let sdk,db,auth;
 const key='honal_v2_demo';
 const initial=()=>({store:{id:'demo',name:'혼알카페 시연 매장',industry:'카페',code:'DEMO-ONLY'},members:[{id:'demo-staff',name:'시연 직원',role:'staff'},{id:'demo-boss',name:'시연 사장',role:'boss'}],manuals:[],notices:[],reads:[],noticeReads:[],questions:[],events:[]});
-function local(){try{return JSON.parse(localStorage.getItem(key))||initial();}catch{return initial();}}
+const defaultManuals = [{"title":"마감 정산","content":"1. 포스기의 마감 화면에서 현금과 카드 매출을 확인합니다.\n2. 시재 준비금은 50만 원입니다. 준비금을 제외한 현금은 정산 봉투에 넣습니다.\n3. 금액이 맞지 않으면 임의로 맞추지 말고 사장님께 확인합니다."},{"title":"포스기 오류 대처법","content":"1. 영수증이 나오지 않으면 프린터 용지와 전원 연결을 확인합니다.\n2. 결제 승인 여부가 불확실하면 중복 결제를 진행하지 말고 사장님께 확인합니다.\n3. 해결되지 않는 오류는 오류 메시지를 기록해 사장님에게 전달합니다."},{"title":"컴플레인 응대","content":"1. 고객의 불편 사항을 끝까지 듣고 사과합니다.\n2. 현장 해결이 어렵거나 환불 승인이 필요하면 사장님께 연락합니다.\n3. 환불 금액과 예외 규정은 사장님 확인 후 안내합니다."},{"title":"카페라테 레시피","content":"카페라테 한 잔에는 에스프레소 2샷과 우유 200ml를 사용합니다. 주문한 ICE/HOT 구분을 먼저 확인합니다."}];
+function local(){
+ let value;
+ try{value=JSON.parse(localStorage.getItem(key))||initial();}catch{value=initial();}
+ if(!value.defaultManualsReady){
+  if(!value.manuals?.length)value.manuals=defaultManuals.map((m,i)=>({...m,id:'default-'+i,version:1,isTemplate:true,createdAt:Date.now(),updatedAt:Date.now()}));
+  value.defaultManualsReady=true;
+  persist(value);
+ }
+ return value;
+}
 function persist(d){localStorage.setItem(key,JSON.stringify(d));}
 export function demo(){session={mode:'demo',storeId:'demo',uid:'demo-staff',role:'staff',name:'시연 직원'};localStorage.setItem('honal_v2_mode','demo');return local().store;}
 export function demoRole(role){if(session?.mode==='demo')Object.assign(session,{role,uid:role==='boss'?'demo-boss':'demo-staff',name:role==='boss'?'시연 사장':'시연 직원'});}
