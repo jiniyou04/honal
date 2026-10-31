@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {findRelevantChunks, formatAnswerText, splitTextIntoChunks} from '../js/utils.js';
 const manuals = [
-    {manualId:'closing',manualTitle:'마감 정산 방법',text:'POS의 영업 마감 버튼을 누르고 준비금 50만 원을 제외해 정산합니다.'},
+    {manualId:'closing',manualTitle:'마감 정산 방법',text:'손님이 모두 퇴장하면 POS의 영업 마감 버튼을 누르고 준비금 50만 원을 제외해 정산합니다.'},
     {manualId:'complaint',manualTitle:'컴플레인 고객 응대',text:'불만을 끝까지 듣고 사과합니다. 현장 해결이 어렵다면 점장에게 연락합니다.'},
     {manualId:'recipe',manualTitle:'카페라테 레시피',text:'에스프레소에 스팀 우유를 넣습니다.'}
 ];

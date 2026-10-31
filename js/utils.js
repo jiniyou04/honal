@@ -21,7 +21,7 @@ const TASK_TERMS = [
     ['텀블러', '개인컵'],
     ['청소', '세척', '위생']
 ];
-const STOP_WORDS = new Set(['어떻게', '해요', '하나요', '해야', '알려주세요', '알려줘', '주세요', '방법', '대처법', '대처', '처리', '매뉴얼', '매장', '가게', '우리', '업무', '대해', '대한', '있나요', '뭔가요', '뭐야', '알려', '좀', '것', '할', '수', '때']);
+const STOP_WORDS = new Set(['어떻게', '해요', '하나요', '해야', '알려주세요', '알려줘', '주세요', '방법', '대처법', '대처', '처리', '매뉴얼', '매장', '가게', '우리', '업무', '손님', '고객', '내용', '기준', '규정', '정책', '대해', '대한', '있나요', '뭔가요', '뭐야', '알려', '좀', '것', '할', '수', '때']);
 const compact = text => String(text || '').toLowerCase().replace(/[^가-힣a-z0-9]/g, '');
 const terms = text => [...new Set((String(text).toLowerCase().match(/[가-힣a-z0-9]+/g) || [])
     .filter(word => !STOP_WORDS.has(word))
@@ -38,6 +38,7 @@ export function findRelevantChunks(question, manuals, limit = 5) {
         const titleText = compact(title);
         const bodyText = compact(body);
         const intentHits = intents.filter(group => group.some(term => (titleText + bodyText).includes(term))).length;
+        if (intents.length > 0 && intentHits === 0) return 0;
         const titleHits = queryTerms.filter(term => titleText.includes(term)).length;
         const bodyHits = queryTerms.filter(term => bodyText.includes(term)).length;
         return intentHits * 5 + titleHits * 3 + bodyHits;
