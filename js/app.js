@@ -1,6 +1,6 @@
 import * as data from './data.js?v=default-manuals-1';
 import {escapeHtml as esc,formatAnswerText} from './utils.js';
-import {answerQuestion} from './answer.js';
+import {answerQuestion} from './answer.js?v=preset-manual-2';
 import {metrics} from './metrics.js';
 import {config} from './config.js?v=appcheck-20261031';
 const $=id=>document.getElementById(id);
@@ -110,7 +110,7 @@ window.sendUserMessage=async()=>{
  const record={query:question,response:answer.text,userId:data.session.uid,createdAt:Date.now(),answerStatus:answer.status,status:escalated?'pending':'answered',escalated,feedback:null,sourceManualIds:[...new Set(answer.sources.map(s=>s.manualId))]};
  let recordId;try{recordId=await data.put('questions',record);}catch(e){loading.remove();chat(answer.text+'\n\n문의 저장에 실패했습니다. 사장님에게 전달되지 않았습니다. 다시 시도하거나 직접 연락해 주세요.');return;}
  loading.remove();const sourceButtons=[...new Map(answer.sources.map(s=>[s.manualId,s])).values()].map(s=>button(`출처: ${s.title}`,'open-manual',s.manualId)).join('');
- chat(answer.text, 'bot',`<small>${answer.status==='answered'?'AI가 선택한 매뉴얼 원문':'답변 미확정'}</small>${sourceButtons}<p>${escalated?'사장님 문의함에 저장했습니다. 문자·푸시 알림은 발송하지 않습니다.':''}</p>${button('도움 됐어요','feedback-up',recordId)}${button('해결 안 됐어요 · 사장님께 전달','feedback-down',recordId)}${answer.status==='connection_error'?button('관련 매뉴얼 직접 찾기','manual-tab'):''}`);
+ chat(answer.text, 'bot',`<small>${answer.status==='answered'?(answer.mode==='manual'?'기본 질문의 매뉴얼 원문':'AI가 선택한 매뉴얼 원문'):'답변 미확정'}</small>${sourceButtons}<p>${escalated?'사장님 문의함에 저장했습니다. 문자·푸시 알림은 발송하지 않습니다.':''}</p>${button('도움 됐어요','feedback-up',recordId)}${button('해결 안 됐어요 · 사장님께 전달','feedback-down',recordId)}${answer.status==='connection_error'?button('관련 매뉴얼 직접 찾기','manual-tab'):''}`);
  await data.event('AI_QUESTION');await refresh();
  }catch(e){loading.remove();chat('질문 처리에 실패했습니다. 문의는 전달되지 않았습니다. 다시 시도해주세요.');notice(e.message);}finally{busy=false;$('send-question').disabled=false;}
 };
