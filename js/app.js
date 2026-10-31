@@ -1,4 +1,4 @@
-import * as data from './data.js';
+import * as data from './data.js?v=default-manuals-1';
 import {escapeHtml as esc,formatAnswerText} from './utils.js';
 import {answerQuestion} from './answer.js';
 import {metrics} from './metrics.js';
