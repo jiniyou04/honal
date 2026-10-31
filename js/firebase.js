@@ -1,7 +1,7 @@
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/12.0.0/firebase-app.js';
 import { initializeAppCheck, ReCaptchaEnterpriseProvider } from 'https://www.gstatic.com/firebasejs/12.0.0/firebase-app-check.js';
 import { getAI, GoogleAIBackend, getGenerativeModel } from 'https://www.gstatic.com/firebasejs/12.0.0/firebase-ai.js';
-import { config } from './config.js';
+import { config } from './config.js?v=appcheck-20261031';
 export const app = initializeApp({
  apiKey:'AIzaSyBJPt9wTTb-pkxI0_9xv6eFAHoE2imyTIQ',authDomain:'honal-a0a82.firebaseapp.com',
  projectId:'honal-a0a82',storageBucket:'honal-a0a82.firebasestorage.app',messagingSenderId:'563434632790',
