@@ -1,0 +1,42 @@
+rules_version = '2';
+service cloud.firestore {
+ match /databases/{database}/documents {
+  function signed(){ return request.auth != null; }
+  function member(s){ return signed() && exists(/databases/$(database)/documents/stores/$(s)/members/$(request.auth.uid)); }
+  function boss(s){ return signed() && get(/databases/$(database)/documents/stores/$(s)).data.ownerId == request.auth.uid; }
+  match /invites/{code} {
+   allow get: if signed();
+   allow list: if false;
+   allow create: if signed() && code.matches('^[A-F0-9]{16}$') && getAfter(/databases/$(database)/documents/stores/$(request.resource.data.storeId)).data.ownerId == request.auth.uid && getAfter(/databases/$(database)/documents/stores/$(request.resource.data.storeId)).data.code == code;
+   allow update: if false;
+   allow delete: if boss(resource.data.storeId);
+  }
+  match /stores/{s} {
+   allow get: if member(s);
+   allow list: if false;
+   allow create: if signed() && request.resource.data.ownerId == request.auth.uid && request.resource.data.name is string && request.resource.data.name.size() <= 80 && request.resource.data.code.matches('^[A-F0-9]{16}$');
+   allow update: if boss(s) && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['name','industry']) && request.resource.data.name.size() <= 80;
+   allow delete: if false;
+   match /members/{uid} {
+    allow get: if signed() && (request.auth.uid == uid || member(s));
+    allow list: if member(s);
+    allow create: if signed() && request.auth.uid == uid && request.resource.data.name is string && request.resource.data.name.size() <= 40 && (
+      (request.resource.data.role == 'boss' && getAfter(/databases/$(database)/documents/stores/$(s)).data.ownerId == uid) ||
+      (request.resource.data.role == 'staff' && get(/databases/$(database)/documents/invites/$(request.resource.data.inviteCode)).data.storeId == s));
+    allow update, delete: if false;
+   }
+   match /{kind}/{id} {
+    allow read: if member(s) && kind in ['manuals','notices','reads','noticeReads','questions','events'];
+    allow create, update: if boss(s) && kind in ['manuals','notices'] && request.resource.data.title is string && request.resource.data.title.size() <= 120 && request.resource.data.content is string && request.resource.data.content.size() <= 100000 && request.resource.data.version is int && request.resource.data.version > 0;
+    allow delete: if boss(s) && kind in ['manuals','notices'];
+    allow create: if member(s) && kind in ['reads','noticeReads','events','questions'] && request.resource.data.userId == request.auth.uid;
+    allow update: if member(s) && kind in ['reads','noticeReads'] && resource.data.userId == request.auth.uid && request.resource.data.userId == request.auth.uid;
+    allow update: if member(s) && kind == 'questions' && (
+     (resource.data.userId == request.auth.uid && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['feedback','escalated','status']) && request.resource.data.feedback in ['up','down'] && request.resource.data.status in ['answered','pending','resolved']) ||
+     (boss(s) && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['ownerReply','status','resolvedAt']) && request.resource.data.ownerReply is string && request.resource.data.ownerReply.size() <= 4000 && request.resource.data.status == 'resolved'));
+   }
+  }
+  // Legacy unscoped collections are deliberately inaccessible. Export/migrate them as an administrator.
+  match /{path=**} { allow read, write: if false; }
+ }
+}

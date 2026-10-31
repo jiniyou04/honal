@@ -65,3 +65,4 @@ export function formatAnswerText(text) {
         return `<p>${safe.replace(/\n/g, '<br>')}</p>`;
     }).join('');
 }
+

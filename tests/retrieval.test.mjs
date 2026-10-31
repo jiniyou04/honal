@@ -35,3 +35,4 @@ test('문서 분할은 재현 가능하며 무작위 임베딩을 생성하지 �
     assert.ok(splitTextIntoChunks('가'.repeat(1100)).every(c=>c.embedding.length===0));
     assert.throws(()=>splitTextIntoChunks('test',10,10),RangeError);
 });
+

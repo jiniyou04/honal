@@ -1,0 +1,5 @@
+import test from 'node:test';import assert from 'node:assert/strict';import {metrics} from '../js/metrics.js';
+const now=Date.parse('2026-10-31T08:00:00Z');
+test('빈 데이터는 100%로 꾸미지 않는다',()=>{const m=metrics({},now);assert.equal(m.activeRate,null);assert.equal(m.feedbackRate,null);assert.equal(m.conversionRate,null);assert.deepEqual(m.counts,[0,0,0,0,0,0,0]);});
+test('실제 직원과 현재 매뉴얼 버전의 고유 읽음만 센다',()=>{const m=metrics({members:[{id:'s1',role:'staff'},{id:'s2',role:'staff'},{id:'b',role:'boss'}],events:[{userId:'b',type:'AI_QUESTION',createdAt:now},{userId:'s1',type:'AI_QUESTION',createdAt:now},{userId:'s2',type:'DRAFT_CREATE',createdAt:now}],manuals:[{id:'m',version:2}],reads:[{userId:'s1',manualId:'m',version:2},{userId:'s1',manualId:'m',version:2},{userId:'s2',manualId:'m',version:1}]},now);assert.equal(m.activeRate,50);assert.equal(m.readRate,50);});
+test('초안 취소 및 일반 매뉴얼 생성은 전환에 넣지 않는다',()=>{assert.equal(metrics({events:[{type:'DRAFT_CREATE',draftId:'d1'},{type:'DRAFT_CREATE',draftId:'d2'}],manuals:[{id:'m1',draftId:'d1'},{id:'m2'}]},now).conversionRate,50);});
