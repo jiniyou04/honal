@@ -13,8 +13,24 @@ export function validateSelection(value,chunks) {
  }
  return selected;
 }
+
+const PRESET_TITLES = new Map([
+ ['마감 정산 어떻게 해요?', ['마감 정산','마감 정산 및 포스기 마감 방법','[기본 템플릿] 마감 정산']],
+ ['포스기 오류 대처법 알려주세요', ['포스기 오류 대처법','포스기 오류 및 카드 결제 대처법','[기본 템플릿] 포스기 오류 대처']],
+ ['컴플레인 고객 응대 요령', ['컴플레인 응대','컴플레인 고객 응대 요령','[기본 템플릿] 컴플레인 응대']]
+]);
+export function presetAnswer(question,manuals) {
+ const titles=PRESET_TITLES.get(question.trim());
+ if(!titles)return null;
+ const manual=manuals.find(m=>titles.includes(m.manualTitle)&&m.text?.trim());
+ if(!manual)return null;
+ return {status:'answered',mode:'manual',text:manual.text,sources:[{manualId:manual.manualId,title:manual.manualTitle,text:manual.text}]};
+}
+
 export async function answerQuestion(question,manuals,generate,{timeoutMs=18000}={}){
  if(risky.test(question))return {status:'unknown',text:UNKNOWN,sources:[]};
+ const preset=presetAnswer(question,manuals);
+ if(preset)return preset;
  const chunks=findRelevantChunks(question,manuals);
  if(!chunks.length)return {status:'unknown',text:UNKNOWN,sources:[]};
  let timer;
@@ -29,6 +45,7 @@ export async function answerQuestion(question,manuals,generate,{timeoutMs=18000}
   if(!evidence)return {status:'unknown',text:UNKNOWN,sources:[]};
   return {status:'answered',text:evidence.map(e=>e.text).join('\n\n'),sources:evidence};
  }catch(e){
+  console.warn('Firebase AI 응답 실패:', e);
   return {status:'connection_error',text:'AI 연결을 확인할 수 없어 답변을 확정하지 않았어요. 사장님에게 확인을 요청하거나 매뉴얼 원문을 직접 확인해 주세요.',sources:[],error: e.message};
  }finally{clearTimeout(timer);}
 }
