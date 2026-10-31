@@ -2,7 +2,7 @@ import * as data from './data.js';
 import {escapeHtml as esc,formatAnswerText} from './utils.js';
 import {answerQuestion} from './answer.js';
 import {metrics} from './metrics.js';
-import {config} from './config.js';
+import {config} from './config.js?v=appcheck-20261031';
 const $=id=>document.getElementById(id);
 let store,cache={manuals:[],notices:[],members:[],reads:[],noticeReads:[],questions:[],events:[]},busy=false,draftId=null,refreshSeq=0;
 const show=id=>$(id)?.classList.remove('hidden'),hide=id=>$(id)?.classList.add('hidden');
