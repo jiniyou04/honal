@@ -1,5 +1,5 @@
 // 혼알 앱 로직 (매뉴얼, AI 질문봇, 공지, 대시보드, 추천)
-import { db, getFirestore, collection, addDoc, getDocs, doc, deleteDoc, updateDoc, query, orderBy, writeBatch, getDoc, setDoc } from './firebase.js';
+import { db, getFirestore, collection, addDoc, getDocs, doc, deleteDoc, updateDoc, query, orderBy, writeBatch, getDoc, setDoc, generateAIContent } from './firebase.js';
 import { splitTextIntoChunks, cosineSimilarity, escapeHtml } from './utils.js';
 
 let currentUserId = localStorage.getItem('honal_user_id');
@@ -694,13 +694,7 @@ async function generateGeminiGroundedAnswer(queryText, chunks) {
             contents: [{ role: "user", parts: [{ text: userPrompt }] }],
             systemInstruction: { parts: [{ text: systemPrompt }] }
         };
-        const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=`;
-        const res = await fetch(apiUrl, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload)
-        });
-        const data = await res.json();
+        const data = await generateAIContent(payload);
         const candidate = data.candidates?.[0];
         if (candidate && candidate.content?.parts?.[0]?.text) {
             return candidate.content.parts[0].text;
@@ -726,13 +720,7 @@ async function determineTopic(queryText, industry) {
             contents: [{ role: "user", parts: [{ text: queryText }] }],
             systemInstruction: { parts: [{ text: systemPrompt }] }
         };
-        const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=`;
-        const res = await fetch(apiUrl, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload)
-        });
-        const data = await res.json();
+        const data = await generateAIContent(payload);
         const candidate = data.candidates?.[0];
         if (candidate && candidate.content?.parts?.[0]?.text) {
             return candidate.content.parts[0].text.trim().replace(/["']/g, '');
@@ -871,13 +859,7 @@ window.createDraftManual = async function(topic, title, recId) {
             contents: [{ role: "user", parts: [{ text: userPrompt }] }],
             systemInstruction: { parts: [{ text: systemPrompt }] }
         };
-        const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=`;
-        const res = await fetch(apiUrl, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload)
-        });
-        const data = await res.json();
+        const data = await generateAIContent(payload);
         const candidate = data.candidates?.[0];
         if (candidate && candidate.content?.parts?.[0]?.text) {
             draftContent = candidate.content.parts[0].text;
