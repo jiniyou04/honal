@@ -1,4 +1,4 @@
-import * as data from './data.js?v=preset-manual-2';
+import * as data from './data.js?v=evaluation-clean-1';
 import {escapeHtml as esc,formatAnswerText} from './utils.js';
 import {answerQuestion} from './answer.js?v=preset-manual-2';
 import {metrics} from './metrics.js';
@@ -25,13 +25,14 @@ async function refresh(){
  const keys=Object.keys(cache);const values=await Promise.all(keys.map(k=>data.list(k)));if(seq!==refreshSeq)return;
  keys.forEach((k,i)=>cache[k]=values[i]);
  $('store-name-display').textContent=store.name;$('store-industry-badge').textContent=store.industry;$('store-code-display').textContent=store.code;
- $('session-label').textContent=data.session.mode==='demo'?'개인 시연 · 이 브라우저에만 저장':`${store.name} · ${data.session.name} · ${data.session.role==='boss'?'사장':'직원'}`;
+ $('session-label').textContent=data.session.mode==='demo'?'평가 매장 · 같은 브라우저에서 알바생·사장 역할을 전환할 수 있습니다':`${store.name} · ${data.session.name} · ${data.session.role==='boss'?'사장':'직원'}`;
  renderManuals();renderNotices();renderDashboard();renderRecommendations();renderStaff();renderRequests();
  }catch(e){notice(`데이터를 불러오지 못했습니다: ${e.message}`);}
 }
 window.switchRole=function(role){
  if(data.session?.mode==='cloud'&&role==='boss'&&data.session.role!=='boss'){notice('직원 계정에서는 사장님 화면을 열 수 없습니다.');return;}
  if(!data.session)return;
+ notice('');
  data.demoRole(role);
  for(const r of ['staff','boss']){$(`view-${r}`).classList.toggle('hidden',r!==role);$(`nav-${r}`).classList.toggle('hidden',r!==role);$(`btn-role-${r}`).classList.toggle('selected-role',r===role);}
  window.switchTab(role,role==='boss'?'dashboard':'question');refresh();
@@ -42,14 +43,9 @@ window.closeStoreSettingModal=()=>hide('store-setting-modal');
 window.selectIndustry=ind=>{$('setting-industry').value=ind;$('btn-ind-cafe').classList.toggle('selected-role',ind==='카페');$('btn-ind-restaurant').classList.toggle('selected-role',ind==='음식점');};
 window.saveStoreSettings=async()=>{guard();const name=$('setting-store-name').value.trim();if(!name)return notice('매장 이름을 입력해주세요.');const value={name:name.slice(0,80),industry:$('setting-industry').value};await data.storeSettings(value);Object.assign(store,value);hide('store-setting-modal');await refresh();notice('매장 설정을 저장했습니다.');};
 window.copyStoreCode=async()=>{if(data.session.mode==='demo')return notice('개인 시연 데이터는 다른 기기와 공유되지 않습니다. 공유 매장 생성 후 실제 초대 코드를 복사할 수 있습니다.');try{await navigator.clipboard.writeText(store.code);notice('초대 코드를 복사했습니다.');}catch{notice(`복사할 초대 코드: ${store.code}`);}};
-window.seedDemoData=async()=>{
- guard();if(data.session.mode!=='demo')return notice('시연 데이터는 개인 시연 모드에서만 만들 수 있습니다.');
- for(const [i,m] of templates['카페'].entries())if(!cache.manuals.some(x=>x.id===`demo-${i}`))await data.put('manuals',{...m,version:1,isTemplate:true,createdAt:Date.now(),updatedAt:Date.now()},`demo-${i}`);
- await refresh();hide('store-setting-modal');notice('시연용 매뉴얼을 준비했습니다. 질문·읽음·통계 기록은 직접 사용한 만큼만 쌓입니다.');
-};
 window.openTemplateModal=()=>{guard();$('template-modal-subtitle').textContent=`${store.industry} 예시입니다. 실제 매장 기준에 맞춰 수정하세요.`;$('template-list-container').innerHTML=templates[store.industry].map(m=>`<article><h4>${esc(m.title)}</h4><p>${esc(m.content)}</p></article>`).join('');show('template-modal');};
 window.closeTemplateModal=()=>hide('template-modal');
-window.applyAllTemplates=async()=>{guard();for(const m of templates[store.industry]){const id=`template-${store.industry}-${templates[store.industry].indexOf(m)}`;if(cache.manuals.some(x=>x.id===id))continue;await data.put('manuals',{...m,version:1,isTemplate:true,createdAt:Date.now(),updatedAt:Date.now()},id);}hide('template-modal');await refresh();notice('기본 템플릿을 적용했습니다. 동일 템플릿은 중복 추가하지 않습니다.');};
+window.applyAllTemplates=async()=>{guard();for(const m of templates[store.industry]){const id=`template-${store.industry}-${templates[store.industry].indexOf(m)}`;if(cache.manuals.some(x=>x.id===id||x.title===m.title))continue;await data.put('manuals',{...m,version:1,isTemplate:true,createdAt:Date.now(),updatedAt:Date.now()},id);}hide('template-modal');await refresh();notice('기본 템플릿을 적용했습니다. 동일 템플릿은 중복 추가하지 않습니다.');};
 function renderManuals(){
  for(const role of ['boss','staff']){$(`${role}-manual-list`).innerHTML=cache.manuals.length?cache.manuals.map(m=>{const read=cache.reads.some(r=>r.manualId===m.id&&r.version===m.version&&r.userId===data.session.uid);return `<article><small>v${m.version} ${m.isTemplate?'· 예시 템플릿':''}</small><h4>${esc(m.title)}</h4><p class="preview">${esc(m.content)}</p>${role==='boss'?button('수정','edit-manual',m.id)+button('확인 현황','read-manual',m.id)+button('삭제','delete-manual',m.id):button(read?'확인 완료 · 열기':'확인 필요 · 열기','open-manual',m.id)}</article>`;}).join(''):empty('등록된 매뉴얼이 없습니다. 사장님이 먼저 매뉴얼을 등록해주세요.');}
  window.filterStaffManuals();
@@ -96,7 +92,7 @@ function renderDashboard(){const m=metrics(cache);$('stat-total-manuals').textCo
  const max=Math.max(1,...m.counts);$('weekly-chart-container').innerHTML=m.counts.map(n=>`<div style="height:100%;flex:1;display:flex;flex-direction:column;justify-content:flex-end;align-items:center"><span>${n}</span><div style="background:#6366f1;width:24px;height:${n/max*85}%"></div></div>`).join('');$('weekly-chart-labels').innerHTML=m.days.map(d=>`<span>${d.slice(5)}</span>`).join('');}
 function renderStaff(){$('staff-roster').innerHTML=cache.members.filter(m=>m.role==='staff').map(m=>`<p>${esc(m.name)}</p>`).join('')||empty('참여한 직원이 없습니다.');}
 function renderRecommendations(){const issues=cache.questions.filter(q=>q.escalated&&q.status!=='resolved');const html=issues.map(q=>`<article><h4>${esc(q.query)}</h4><p>우리 매장 미해결 문의</p>${button('매뉴얼 초안 만들기','draft',q.id)}</article>`).join('')||empty('미해결 문의가 없습니다.');$('recommendation-list-container').innerHTML=html;$('dashboard-recommendation-preview').innerHTML=issues.slice(0,3).map(q=>`<p>${esc(q.query)}</p>`).join('')||empty('미해결 문의가 없습니다.');}
-function renderRequests(){$('request-list').innerHTML=cache.questions.filter(q=>q.escalated).sort((a,b)=>b.createdAt-a.createdAt).map(q=>`<article><small>${q.status==='resolved'?'답변 완료':'확인 대기'} · ${date(q.createdAt)}</small><h4>${esc(q.query)}</h4><p>${esc(q.ownerReply||'사장님 확인이 필요합니다.')}</p>${q.status!=='resolved'?`<label>직원에게 전달할 답변<textarea id="reply-${esc(q.id)}" placeholder="확인한 내용을 입력해주세요"></textarea></label>${button('답변 저장','reply',q.id)}${button('매뉴얼로 보강','draft',q.id)}`:''}</article>`).join('')||empty('전달된 문의가 없습니다.');
+function renderRequests(){$('request-list').innerHTML=cache.questions.filter(q=>q.escalated).sort((a,b)=>b.createdAt-a.createdAt).map(q=>`<article><small>${q.status==='resolved'?'답변 완료':'확인 대기'} · ${date(q.createdAt)}</small><h4>${esc(q.query)}</h4><p>${esc(q.ownerReply||'사장님 확인이 필요합니다.')}</p>${q.status!=='resolved'?`<label>직원에게 전달할 답변<textarea id="reply-${esc(q.id)}" placeholder="확인한 내용을 입력해주세요"></textarea></label>${button('답변 저장','reply',q.id)}${button('매뉴얼로 보강','draft',q.id)}`:button('답변을 매뉴얼로 저장','draft',q.id)}</article>`).join('')||empty('전달된 문의가 없습니다.');
  $('my-requests').innerHTML=cache.questions.filter(q=>q.userId===data.session.uid&&q.escalated).map(q=>`<article><h4>${esc(q.query)}</h4><p>${q.ownerReply?'사장님 답변: '+esc(q.ownerReply):'사장님 확인 대기 중입니다.'}</p></article>`).join('');}
 function chat(text,who='bot',extra=''){const el=document.createElement('article');el.className=who==='user'?'chat-user':'chat-bot';el.innerHTML=`<small>${who==='user'?'나':'혼알'}</small><div>${formatAnswerText(text)}</div>${extra}`;$('chat-messages').append(el);$('chat-messages').scrollTop=$('chat-messages').scrollHeight;return el;}
 window.handleChatKeyDown=e=>{if(e.key==='Enter'&&!e.shiftKey&&!e.isComposing){e.preventDefault();window.sendUserMessage();}};
@@ -134,4 +130,5 @@ for(const name of ['loadManualsForBoss','loadManualsForStaff','loadNoticesForBos
 window.addEventListener('error',e=>notice(`화면 오류: ${e.message}`));window.addEventListener('unhandledrejection',e=>{notice(e.reason?.message||'요청에 실패했습니다. 다시 시도해주세요.');});
 document.addEventListener('visibilitychange',()=>{if(!document.hidden&&store)refresh();});
 setInterval(()=>{if(!document.hidden&&data.session?.mode==='cloud'&&!busy)refresh();},30000);
+document.querySelectorAll('[data-cloud-only]').forEach(el=>el.classList.toggle('hidden',!config.cloudEnabled));
 try{store=await data.restore();window.switchRole(data.session.role);await refresh();notice(config.appCheckSiteKey?'등록된 매뉴얼 근거를 확인합니다.':'AI 연결 설정 대기 · 매뉴얼·공지·문의 전달은 개인 시연에서 사용할 수 있습니다.');}catch(e){notice(e.message);show('account-modal');}
