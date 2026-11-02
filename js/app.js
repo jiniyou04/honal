@@ -1,4 +1,4 @@
-import * as data from './data.js?v=evaluation-clean-1';
+import * as data from './data.js?v=question-cleanup-20261102';
 import {escapeHtml as esc,formatAnswerText} from './utils.js';
 import {answerQuestion} from './answer.js?v=preset-manual-2';
 import {metrics} from './metrics.js';
@@ -107,7 +107,7 @@ window.sendUserMessage=async()=>{
  let recordId;try{recordId=await data.put('questions',record);}catch(e){loading.remove();chat(answer.text+'\n\n문의 저장에 실패했습니다. 사장님에게 전달되지 않았습니다. 다시 시도하거나 직접 연락해 주세요.');return;}
  loading.remove();const sourceButtons=[...new Map(answer.sources.map(s=>[s.manualId,s])).values()].map(s=>button(`출처: ${s.title}`,'open-manual',s.manualId)).join('');
  chat(answer.text, 'bot',`<small>${answer.status==='answered'?(answer.mode==='manual'?'기본 질문의 매뉴얼 원문':'AI가 선택한 매뉴얼 원문'):'답변 미확정'}</small>${sourceButtons}<p>${escalated?'사장님 문의함에 저장했습니다. 문자·푸시 알림은 발송하지 않습니다.':''}</p>${button('도움 됐어요','feedback-up',recordId)}${button('해결 안 됐어요 · 사장님께 전달','feedback-down',recordId)}${answer.status==='connection_error'?button('관련 매뉴얼 직접 찾기','manual-tab'):''}`);
- await data.event('AI_QUESTION');await refresh();
+ await data.event('AI_QUESTION',{questionId:recordId});await refresh();
  }catch(e){loading.remove();chat('질문 처리에 실패했습니다. 문의는 전달되지 않았습니다. 다시 시도해주세요.');notice(e.message);}finally{busy=false;$('send-question').disabled=false;}
 };
 async function draft(questionId){guard();const q=cache.questions.find(x=>x.id===questionId);window.openManualModal();draftId=crypto.randomUUID();$('manual-modal-title').textContent='매뉴얼 보강 초안';$('manual-title-input').value=q.query.slice(0,100);$('manual-content-input').value=q.ownerReply||`직원 질문: ${q.query}\n\n적용 조건:\n처리 순서:\n예외 상황과 사장님 문의 기준:\n\n사장님이 실제 매장 기준을 작성한 뒤 저장해주세요.`;await data.event('DRAFT_CREATE',{draftId});}
