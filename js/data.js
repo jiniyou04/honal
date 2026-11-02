@@ -35,6 +35,17 @@ function local(){
   value.evaluationCleanedV1=true;
   persist(value);
  }
+ if(!value.questionCleanup20261102){
+  const targets=[...(value.questions||[])].filter(q=>q.userId==='demo-staff'&&q.createdAt<=1793608581018).sort((a,b)=>b.createdAt-a.createdAt).slice(0,4);
+  const ids=new Set(targets.map(q=>q.id));
+  if(targets.length){
+   localStorage.setItem(key+'_backup_before_four_question_cleanup',JSON.stringify(value));
+   value.questions=(value.questions||[]).filter(q=>!ids.has(q.id));
+   value.events=(value.events||[]).filter(e=>!ids.has(e.questionId));
+  }
+  value.questionCleanup20261102=true;
+  persist(value);
+ }
  return value;
 }
 function persist(d){localStorage.setItem(key,JSON.stringify(d));}
