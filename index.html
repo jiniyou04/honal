@@ -31,7 +31,7 @@ article{background:white;border:1px solid #e2e8f0;border-radius:12px;padding:16p
         </div>
     </header>
 
-    <div class="max-w-md mx-auto p-4"><div id="session-label"></div><button class="action" onclick="openAccount()">매장 생성 / 코드로 참여</button><p id="app-status" role="status" aria-live="polite"></p></div>
+    <div class="max-w-md mx-auto p-4"><div id="session-label"></div><button data-cloud-only class="action hidden" onclick="openAccount()">매장 생성 / 코드로 참여</button><p id="app-status" role="status" aria-live="polite"></p></div>
     <!-- 메인 컨텐츠 영역 -->
     <main class="max-w-md mx-auto p-4 space-y-4">
         
@@ -99,7 +99,7 @@ article{background:white;border:1px solid #e2e8f0;border-radius:12px;padding:16p
                         </div>
                         <button onclick="openStoreSettingModal()" class="bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs px-2.5 py-1.5 rounded-xl font-semibold transition">업종/설정 변경</button>
                     </div>
-                    <div class="pt-2 border-t border-slate-100 flex justify-between items-center text-xs">
+                    <div data-cloud-only class="hidden pt-2 border-t border-slate-100 flex justify-between items-center text-xs">
                         <span>초대 코드: <strong class="font-mono tracking-wider text-indigo-600" id="store-code-display">DEMO-ONLY</strong></span>
                         <button onclick="copyStoreCode()" class="bg-indigo-50 text-indigo-600 px-2.5 py-1 rounded-lg font-bold shadow-2xs">코드 복사</button>
                     </div>
@@ -199,7 +199,7 @@ article{background:white;border:1px solid #e2e8f0;border-radius:12px;padding:16p
                 <div class="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-2xs">
                     <div class="p-4 border-b border-slate-100 flex justify-between items-center">
                         <h3 class="font-bold text-slate-800 text-sm">근무 중인 직원 목록</h3>
-                        <button class="action" onclick="copyStoreCode()">초대 코드 복사</button>
+                        <button data-cloud-only class="action hidden" onclick="copyStoreCode()">초대 코드 복사</button>
                     </div>
                     <div class="p-4" id="staff-roster"></div>
                 </div>
@@ -233,13 +233,7 @@ article{background:white;border:1px solid #e2e8f0;border-radius:12px;padding:16p
                     <input type="hidden" id="setting-industry" value="카페">
                 </div>
 
-                <!-- [8단계] 발표 시연용 데모 데이터 불러오기 버튼 -->
-                <div class="pt-3 border-t border-slate-100">
-                    <button onclick="seedDemoData()" class="w-full bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-bold py-3 rounded-xl text-xs shadow-md transition flex items-center justify-center gap-2">
-                        <i class="fa-solid fa-wand-magic-sparkles"></i> 발표 시연용 데모 데이터 불러오기
-                    </button>
-                    <p class="text-[10px] text-slate-400 mt-1.5 text-center">시연용 매뉴얼만 준비합니다. 통계는 실제 시연 활동으로 집계합니다.</p>
-                </div>
+
             </div>
             <div class="p-4 border-t border-slate-100 bg-slate-50 flex gap-2">
                 <button onclick="closeStoreSettingModal()" class="flex-1 bg-slate-200 text-slate-700 font-semibold py-2.5 rounded-xl text-sm transition">취소</button>
@@ -397,7 +391,7 @@ article{background:white;border:1px solid #e2e8f0;border-radius:12px;padding:16p
                 <i class="fa-solid fa-book text-lg"></i>매뉴얼
             </button>
             <button onclick="switchTab('staff', 'notice')" id="nav-staff-notice" class="flex flex-col items-center justify-center text-slate-400 font-medium gap-1 relative">
-                <i class="fa-solid fa-bullhorn text-lg"></i>공지
+                <i class="fa-solid fa-bullhorn text-lg"></i>공지·문의
                 <span id="badge-unread-notices" class="absolute top-2 right-10 bg-rose-500 text-white text-[9px] font-bold px-1.5 py-0.5 rounded-full hidden">0</span>
             </button>
         </div>
@@ -422,6 +416,6 @@ article{background:white;border:1px solid #e2e8f0;border-radius:12px;padding:16p
     <div id="account-modal" class="fixed inset-0 bg-slate-900/50 z-50 hidden flex items-center justify-center p-4"><div class="bg-white max-w-md w-full rounded-2xl p-6"><h3>매장 연결</h3><p class="empty">개인 시연은 이 브라우저에만 저장합니다. 공유 매장은 서버 설정 후 사용할 수 있습니다. 익명 인증은 브라우저 데이터를 지우면 복구할 수 없습니다.</p><label>이름<input class="account-input" id="account-name" maxlength="40" placeholder="직원 또는 사장님 이름"></label><label>새 매장 이름<input class="account-input" id="account-store" maxlength="80" placeholder="예: 혼알카페"></label><button class="action" onclick="connectStore('create')">사장님으로 매장 생성</button><label>초대 코드<input class="account-input" id="account-code" maxlength="32" placeholder="16자리 초대 코드"></label><button class="action" onclick="connectStore('join')">직원으로 참여</button><p id="account-error" role="alert"></p><hr><button class="action" onclick="enterDemo()">개인 시연 시작</button><button class="action" onclick="closeAccount()">닫기</button></div></div>
     <!-- 스크립트: 화면 전환 → 앱 로직(Firebase 포함) -->
     
-    <script type="module" src="js/app.js?v=preset-manual-2"></script>
+    <script type="module" src="js/app.js?v=evaluation-clean-1"></script>
 </body>
 </html>
